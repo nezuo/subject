@@ -1,7 +1,5 @@
 --[=[
 	@class Subject
-
-	Here is some description of what a subject object is!
 ]=]
 local Subject = {}
 Subject.__index = Subject
@@ -22,7 +20,7 @@ end
 --[=[
 	@param ... any
 
-	Calls all subscribers with `task.spawn` with the arguments.
+	Calls all subscribers in seperate threads with the arguments passed. The order in which each subscriber is called is undefined.
 
 	```lua
 	subject:notify("a", 1, true)
@@ -39,6 +37,10 @@ end
 	@return () -> ()
 
 	Adds a subscriber to the subject and returns a function to unsubscribe it.
+
+	:::info
+	The returned `unsubscribe` function does nothing if the subscriber is already unsubscribed.
+	:::
 
 	```lua
 	local unsubscribe = subject:subscribe(function() end)
