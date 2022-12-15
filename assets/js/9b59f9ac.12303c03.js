@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[118],{97868:function(s){s.exports=JSON.parse('{"sourceUrl":"https://github.com/nezuo/subject/blob/master","baseUrl":"/subject/","classOrder":[],"apiCategories":[]}')}}]);
