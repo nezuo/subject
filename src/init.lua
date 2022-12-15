@@ -1,3 +1,5 @@
+local Promise = require(script.Parent.Promise)
+
 --[=[
 	@class Subject
 ]=]
@@ -14,6 +16,7 @@ Subject.__index = Subject
 function Subject.new()
 	return setmetatable({
 		_subscribers = {},
+		_onceSubscribers = {},
 	}, Subject)
 end
 
@@ -27,9 +30,15 @@ end
 	```
 ]=]
 function Subject:notify(...)
-	for _, subscriber in pairs(self._subscribers) do
+	for _, subscriber in self._subscribers do
 		task.spawn(subscriber, ...)
 	end
+
+	for _, subscriber in self._onceSubscribers do
+		task.spawn(subscriber, ...)
+	end
+
+	table.clear(self._onceSubscribers)
 end
 
 --[=[
@@ -37,10 +46,6 @@ end
 	@return () -> ()
 
 	Adds a subscriber to the subject and returns a function to unsubscribe it.
-
-	:::info
-	The returned `unsubscribe` function does nothing if the subscriber is already unsubscribed.
-	:::
 
 	```lua
 	local unsubscribe = subject:subscribe(function() end)
@@ -56,6 +61,49 @@ function Subject:subscribe(subscriber)
 	self._subscribers[unsubscribe] = subscriber
 
 	return unsubscribe
+end
+
+--[=[
+	@param subscriber (...: any) -> ...any | thread
+	@return () -> ()
+
+	Adds a subscriber to the subject that is only notified once and returns a function to unsubscribe it.
+
+	```lua
+	local unsubscribe = subject:once(function() end)
+
+	unsubscribe()
+	```
+]=]
+function Subject:once(subscriber)
+	local function unsubscribe()
+		self._onceSubscribers[unsubscribe] = nil
+	end
+
+	self._onceSubscribers[unsubscribe] = subscriber
+
+	return unsubscribe
+end
+
+--[=[
+	@return Promise
+
+	Returns a promise that resolves when the subject is notified. The promise can be canceled.
+
+	```lua
+	subject:promise():andThen(function(value)
+		print(value) -- Hello!
+	end)
+
+	subject:notify("Hello!")
+	```
+]=]
+function Subject:promise()
+	return Promise.new(function(resolve, _, onCancel)
+		local unsubscribe = self:once(resolve)
+
+		onCancel(unsubscribe)
+	end)
 end
 
 return Subject
