@@ -30,15 +30,18 @@ end
 	```
 ]=]
 function Subject:notify(...)
-	for _, subscriber in self._subscribers do
+	local currentOnceSubscribers = self._onceSubscribers
+	local currentSubscribers = table.clone(self._subscribers)
+
+	self._onceSubscribers = {}
+
+	for _, subscriber in currentSubscribers do
 		task.spawn(subscriber, ...)
 	end
 
-	for _, subscriber in self._onceSubscribers do
+	for _, subscriber in currentOnceSubscribers do
 		task.spawn(subscriber, ...)
 	end
-
-	table.clear(self._onceSubscribers)
 end
 
 --[=[

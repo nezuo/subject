@@ -103,4 +103,44 @@ return function()
 
 		expect(value).to.equal("hello")
 	end)
+
+	it("should not notify subscriptions added by once subscription", function()
+		local onceNotified = false
+		local subscribeNotified = false
+
+		subject:once(function()
+			subject:once(function()
+				onceNotified = true
+			end)
+
+			subject:subscribe(function()
+				subscribeNotified = true
+			end)
+		end)
+
+		subject:notify()
+
+		expect(onceNotified).to.equal(false)
+		expect(subscribeNotified).to.equal(false)
+	end)
+
+	it("should not notify subscriptions added by subscribe subscription", function()
+		local onceNotified = false
+		local subscribeNotified = false
+
+		subject:subscribe(function()
+			subject:once(function()
+				onceNotified = true
+			end)
+
+			subject:subscribe(function()
+				subscribeNotified = true
+			end)
+		end)
+
+		subject:notify()
+
+		expect(onceNotified).to.equal(false)
+		expect(subscribeNotified).to.equal(false)
+	end)
 end

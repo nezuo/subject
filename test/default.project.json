@@ -13,6 +13,9 @@
           "$path": "../"
         },
         "$path": "../Packages"
+      },
+      "DevPackages": {
+        "$path": "../DevPackages"
       }
     },
     "ServerScriptService": {
